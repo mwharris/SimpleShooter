@@ -4,6 +4,7 @@ Intermediate
 Saved
 Content/AssetPacks
 .vscode
+c_cpp_properties.json
 *.VC.db
 *.opensdf
 *.opendb
