@@ -21,5 +21,10 @@ protected:
 private:
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
+	void ControllerLookUp(float AxisValue);
+	void ControllerLookRight(float AxisValue);
+
+	UPROPERTY(EditAnywhere)
+	float RotationSpeed = 10; 
 
 };
