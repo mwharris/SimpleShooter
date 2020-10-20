@@ -1,41 +1,36 @@
 #include "ShooterAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "SimpleShooter/Characters/ShooterCharacter.h"
-#include "BehaviorTree/BlackboardComponent.h"
 
 void AShooterAIController::BeginPlay()
 {
     Super::BeginPlay();
 
-    APawn* OurPawn = GetPawn();
-    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 
     if (AIBehavior != nullptr) 
     {
 	    RunBehaviorTree(AIBehavior);
-        GetBlackboardComponent()->SetValueAsVector(TEXT("StartLocation"), OurPawn->GetActorLocation());
-        GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), PlayerPawn->GetActorLocation());
+        GetBlackboardComponent()->SetValueAsVector(TEXT("StartLocation"), GetPawn()->GetActorLocation());
     }
 }
 
 void AShooterAIController::Tick(float DeltaTime) 
 {
     Super::Tick(DeltaTime);
-
-    /*
+    
     // Check if we have line of sight to the player
     if (LineOfSightTo(PlayerPawn))
     {
-        // If so, aim and move towards them
-        SetFocus(PlayerPawn, EAIFocusPriority::Gameplay);
-        MoveToActor(PlayerPawn, AcceptanceRadius, false);
+        // Set current and last PlayerLocations if so
+        GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), PlayerPawn->GetActorLocation());
+        GetBlackboardComponent()->SetValueAsVector(TEXT("LastKnownPlayerLocation"), PlayerPawn->GetActorLocation());
     }
     else
     {
-        // If not, ignore them
-        ClearFocus(EAIFocusPriority::Gameplay);
-        StopMovement();
+        // Clear the current PlayerLocation if not
+        GetBlackboardComponent()->ClearValue(TEXT("PlayerLocation"));
     }
-    */
 }

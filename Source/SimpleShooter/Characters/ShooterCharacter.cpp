@@ -1,4 +1,5 @@
 #include "ShooterCharacter.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "SimpleShooter/Actors/Gun.h"
@@ -52,11 +53,24 @@ void AShooterCharacter::Tick(float DeltaTime)
 
 float AShooterCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) 
 {
+	// Call the super take damage in case there are some calculations there
 	float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	DamageApplied = FMath::Min(Health, DamageApplied);
-	Health -= DamageApplied;
-	UE_LOG(LogTemp, Warning, TEXT("Health is: %f"), Health);
+	// Subtract our total applied damage
+	Health -= FMath::Min(Health, DamageApplied);
+	// Cleanup if we died
+	if (IsDead())
+	{
+		// Detach from the player controller to disable any input
+		DetachFromControllerPendingDestroy();
+		// Disable all collisions
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 	return DamageApplied;
+}
+
+void AShooterCharacter::Shoot() 
+{
+	Gun->PullTrigger();
 }
 
 void AShooterCharacter::MoveForward(float AxisValue) 
@@ -77,11 +91,6 @@ void AShooterCharacter::ControllerLookUp(float AxisValue)
 void AShooterCharacter::ControllerLookRight(float AxisValue) 
 {
 	AddControllerYawInput(AxisValue * RotationSpeed * GetWorld()->GetDeltaSeconds());
-}
-
-void AShooterCharacter::Shoot() 
-{
-	Gun->PullTrigger();
 }
 
 bool AShooterCharacter::IsDead() const

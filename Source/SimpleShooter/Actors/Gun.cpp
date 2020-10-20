@@ -41,10 +41,16 @@ void AGun::PullTrigger()
 	FRotator Rotation;
 	OwnerController->GetPlayerViewPoint(Location, Rotation);
 	
+	// Build params in preparation for our raycast
+	FVector End = Location + Rotation.Vector() * MaxRange;
+	// Make sure to not hit ourselves (the gun) or our owner (the character)
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	Params.AddIgnoredActor(GetOwner());
+
 	// Shoot our our raycast for the player's viewpoint
 	FHitResult OutHit;
-	FVector End = Location + Rotation.Vector() * MaxRange;
-	bool bSuccess = GetWorld()->LineTraceSingleByChannel(OutHit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
+	bool bSuccess = GetWorld()->LineTraceSingleByChannel(OutHit, Location, End, ECollisionChannel::ECC_GameTraceChannel1, Params);
 
 	if (bSuccess) 
 	{
@@ -58,8 +64,5 @@ void AGun::PullTrigger()
 			FPointDamageEvent DamageEvent(Damage, OutHit, ShotDirection, nullptr);
 			HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
 		}
-
-		// DrawDebugLine(GetWorld(), Location, End, FColor::Yellow, true);
-		// DrawDebugPoint(GetWorld(), OutHit.ImpactPoint, 20.f, FColor::Red, true);
 	}
 }
