@@ -28,15 +28,12 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 	float RotationSpeed = 10; 
-
 	UPROPERTY(EditDefaultsOnly)
 	float MaxHealth = 100.f;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGun> GunClass;
-
 	UPROPERTY(VisibleAnywhere)
 	float Health = 0.f;
-
 	UPROPERTY()
 	AGun* Gun;
 
@@ -46,5 +43,6 @@ private:
 	void MoveRight(float AxisValue);
 	void ControllerLookUp(float AxisValue);
 	void ControllerLookRight(float AxisValue);
+	void UpdateHUDHealth() const;
 
 };

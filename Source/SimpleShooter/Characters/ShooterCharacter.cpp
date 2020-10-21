@@ -3,6 +3,7 @@
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "SimpleShooter/Actors/Gun.h"
+#include "SimpleShooter/PlayerControllers/ShooterPlayerController.h"
 #include "SimpleShooter/SimpleShooterGameModeBase.h"
 
 AShooterCharacter::AShooterCharacter()
@@ -17,6 +18,7 @@ void AShooterCharacter::BeginPlay()
 	GameModeRef = GetWorld()->GetAuthGameMode<ASimpleShooterGameModeBase>();
 	//Default our starting health
 	Health = MaxHealth;
+	UpdateHUDHealth();
 	// Hide the gun that is part of the Wraith skeletal mesh
 	GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
 	// Spawn our BP_Gun class
@@ -60,6 +62,8 @@ float AShooterCharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 	float DamageApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	// Subtract our total applied damage
 	Health -= FMath::Min(Health, DamageApplied);
+	// Tell the UI to update our displayed HP
+	UpdateHUDHealth();
 	// Cleanup if we died
 	if (IsDead())
 	{
@@ -74,6 +78,15 @@ float AShooterCharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 	return DamageApplied;
+}
+
+void AShooterCharacter::UpdateHUDHealth() const
+{
+	AShooterPlayerController* ShooterPlayerController = Cast<AShooterPlayerController>(GetController());
+	if (ShooterPlayerController != nullptr) 
+	{
+		ShooterPlayerController->UpdateHUDHealth(Health);
+	}
 }
 
 void AShooterCharacter::Shoot() 

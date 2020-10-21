@@ -2,5 +2,5 @@
 
 void ASimpleShooterGameModeBase::PawnKilled(APawn* KilledPawn) 
 {
-    UE_LOG(LogTemp, Warning, TEXT("ASimpleShooterGameModeBase"));
+    
 }
