@@ -3,6 +3,7 @@
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "SimpleShooter/Actors/Gun.h"
+#include "SimpleShooter/SimpleShooterGameModeBase.h"
 
 AShooterCharacter::AShooterCharacter()
 {
@@ -12,6 +13,8 @@ AShooterCharacter::AShooterCharacter()
 void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	// Get a reference to our GameMode
+	GameModeRef = GetWorld()->GetAuthGameMode<ASimpleShooterGameModeBase>();
 	//Default our starting health
 	Health = MaxHealth;
 	// Hide the gun that is part of the Wraith skeletal mesh
@@ -60,6 +63,11 @@ float AShooterCharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 	// Cleanup if we died
 	if (IsDead())
 	{
+		// Tell the GameMode we killed a pawn
+		if (GameModeRef != nullptr) 
+		{
+			GameModeRef->PawnKilled(this);
+		}
 		// Detach from the player controller to disable any input
 		DetachFromControllerPendingDestroy();
 		// Disable all collisions

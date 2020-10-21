@@ -5,6 +5,7 @@
 #include "ShooterCharacter.generated.h"
 
 class AGun;
+class ASimpleShooterGameModeBase;
 
 UCLASS()
 class SIMPLESHOOTER_API AShooterCharacter : public ACharacter
@@ -25,11 +26,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	void MoveForward(float AxisValue);
-	void MoveRight(float AxisValue);
-	void ControllerLookUp(float AxisValue);
-	void ControllerLookRight(float AxisValue);
-
 	UPROPERTY(EditAnywhere)
 	float RotationSpeed = 10; 
 
@@ -44,5 +40,11 @@ private:
 	UPROPERTY()
 	AGun* Gun;
 
+	ASimpleShooterGameModeBase* GameModeRef;
+
+	void MoveForward(float AxisValue);
+	void MoveRight(float AxisValue);
+	void ControllerLookUp(float AxisValue);
+	void ControllerLookRight(float AxisValue);
 
 };
