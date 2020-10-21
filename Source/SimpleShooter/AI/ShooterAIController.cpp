@@ -34,3 +34,17 @@ void AShooterAIController::Tick(float DeltaTime)
         GetBlackboardComponent()->ClearValue(TEXT("PlayerLocation"));
     }
 }
+
+bool AShooterAIController::IsDead() const
+{
+    // Get the pawn and cast to get access to AShooterCharacter::IsDead
+    AShooterCharacter* PlayerCharacter = Cast<AShooterCharacter>(GetPawn());
+    // Pass on the request to that function on success
+    if (PlayerCharacter != nullptr) 
+    {
+        return PlayerCharacter->IsDead();
+    }
+    // On fail, then our Controller must be detached from our Pawn,
+    // which only happens upon death.  So we must be dead.
+    return true; 
+}

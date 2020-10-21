@@ -27,42 +27,58 @@ void AGun::Tick(float DeltaTime)
 
 void AGun::PullTrigger() 
 {
-	// Spawn a muzzle flash
+	// Spawn a muzzle flash and sound
 	UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, MeshComponent, TEXT("MuzzleFlashSocket"));
-	
-	// Get a reference to our controller view GetOwner()
-	APawn* OwnerPawn = Cast<APawn>(GetOwner());
-	if (!OwnerPawn) { return; }
-	AController* OwnerController = OwnerPawn->GetController();
-	if (!OwnerController) { return; }
+	UGameplayStatics::SpawnSoundAttached(MuzzleSound, MeshComponent, TEXT("MuzzleFlashSocket"));
 
-	// Get the Location and Rotation of the player's current view point
-	FVector Location;
-	FRotator Rotation;
-	OwnerController->GetPlayerViewPoint(Location, Rotation);
-	
-	// Build params in preparation for our raycast
-	FVector End = Location + Rotation.Vector() * MaxRange;
-	// Make sure to not hit ourselves (the gun) or our owner (the character)
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-	Params.AddIgnoredActor(GetOwner());
-
-	// Shoot our our raycast for the player's viewpoint
+	// Perform our line trace and get the results
 	FHitResult OutHit;
-	bool bSuccess = GetWorld()->LineTraceSingleByChannel(OutHit, Location, End, ECollisionChannel::ECC_GameTraceChannel1, Params);
+	FVector ShotDirection;
+	bool bSuccess = GunTrace(OutHit, ShotDirection);
 
 	if (bSuccess) 
 	{
-		FVector ShotDirection = -Rotation.Vector();
+		// Spawn impact sound and particles
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, OutHit.ImpactPoint, ShotDirection.Rotation());
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, OutHit.ImpactPoint);
 		
 		// Check that we hit an actor
 		AActor* HitActor = OutHit.GetActor();
 		if (HitActor != nullptr) {
 			// Tell that actor to take damage
 			FPointDamageEvent DamageEvent(Damage, OutHit, ShotDirection, nullptr);
-			HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
+			HitActor->TakeDamage(Damage, DamageEvent, GetOwnerController(), this);
 		}
 	}
+}
+
+bool AGun::GunTrace(FHitResult& Hit, FVector& ShotDirection) 
+{
+	AController* OwnerController = GetOwnerController();
+	if (OwnerController == nullptr) { return false; }
+
+	// Get the Location and Rotation of the player's current view point
+	FVector Location;
+	FRotator Rotation;
+	OwnerController->GetPlayerViewPoint(Location, Rotation);
+	ShotDirection = -Rotation.Vector();
+	
+	// Determine our end location for the line trace
+	FVector End = Location + Rotation.Vector() * MaxRange;
+
+	// Make sure to not hit ourselves (the gun) or our owner (the character)
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	Params.AddIgnoredActor(GetOwner());
+
+	// Shoot out our raycast for the player's viewpoint
+	return GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1, Params);
+}
+
+// Get a reference to our controller via GetOwner()
+AController* AGun::GetOwnerController() const
+{
+	APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	if (!OwnerPawn) { return nullptr; }
+	return OwnerPawn->GetController();
 }
