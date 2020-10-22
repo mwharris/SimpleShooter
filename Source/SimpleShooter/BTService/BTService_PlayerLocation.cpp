@@ -19,8 +19,8 @@ void UBTService_PlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp, uint
     }
 
     // Set the LastKnownPlayerLocation key to the player pawn location
-    OwnerComp.GetBlackboardComponent()->SetValueAsVector(
+    OwnerComp.GetBlackboardComponent()->SetValueAsObject(
         GetSelectedBlackboardKey(), 
-        PlayerPawn->GetActorLocation()
+        PlayerPawn
     );
 }
